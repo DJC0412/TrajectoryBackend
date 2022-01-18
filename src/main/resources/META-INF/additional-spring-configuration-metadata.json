@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "spring.datasource.db1.username",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.db1.username."
+    },
+    {
+      "name": "spring.datasource.initialSize",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.initialSize."
+    }
+  ] }
