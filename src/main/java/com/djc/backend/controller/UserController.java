@@ -1,5 +1,6 @@
 package com.djc.backend.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.djc.backend.entity.User;
 import com.djc.backend.service.UserService;
@@ -43,6 +44,12 @@ public class UserController {
     @GetMapping("/getUserTraj")
     public ArrayList<JSONObject> getUserTrajectoryById(@ApiParam(value = "用户id",required =  true) @RequestParam("id") String id){
         return userService.getUserTrajectoryById(id);
+    }
+
+    @ApiOperation("轨迹模糊匹配")
+    @GetMapping("/getUserTrajRegex")
+    public ArrayList<Object> getUserTrajectoryByRegex(@ApiParam(value = "用户id",required =  true) @RequestParam("id") String id,@ApiParam(value = "模糊搜索",required =  true) @RequestParam("searchNum") String searchNum){
+        return userService.getUserTrajectoryByRegex(id,searchNum);
     }
 
     @ApiOperation("获取单个轨迹数据")
@@ -103,5 +110,11 @@ public class UserController {
     @GetMapping("/getNodesProp")
     public List<List> getNodesProp(@ApiParam(value = "用户id",required =  true) @RequestParam("id") String id){
         return userService.getNodesProp(id);
+    }
+
+    @ApiOperation("获取预测结果")
+    @GetMapping("/getPredictResult")
+    public JSONObject getPredictResult(@ApiParam(value = "模型参数",required =  true) @RequestParam("modelSetting") String modelSetting){
+        return userService.getPredictResult(modelSetting);
     }
 }

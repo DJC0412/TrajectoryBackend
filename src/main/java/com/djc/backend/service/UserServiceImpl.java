@@ -1,5 +1,7 @@
 package com.djc.backend.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.djc.backend.dao.UserDaoImpl;
 import com.djc.backend.entity.User;
@@ -9,6 +11,9 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,6 +73,16 @@ public class UserServiceImpl implements  UserService{
             userTrajs.add(Doc2Json(traj));
         });
         return userTrajs;
+    }
+
+    @Override
+    public ArrayList<Object> getUserTrajectoryByRegex(String id, String searchNum) {
+        List<Document> userTrajsRegex_Mongo = userDaoMongoDB.getUserTrajectoryByRegex(id,searchNum);
+        ArrayList<Object> RegexTrajs = new ArrayList<>();
+        userTrajsRegex_Mongo.forEach((traj)->{
+            RegexTrajs.add(traj.get("_id"));
+        });
+        return RegexTrajs;
     }
 
     @Override
@@ -154,6 +169,7 @@ public class UserServiceImpl implements  UserService{
         List<JSONObject> trajCount = userDaoMongoDB.getUserTrajCount(id);
         for (JSONObject UserObject : trajCount) {
             trajCountJSON.put(id,UserObject.getIntValue("TrajCount"));
+            System.out.println(trajCountJSON);
         }
         return trajCountJSON;
     }
@@ -174,6 +190,47 @@ public class UserServiceImpl implements  UserService{
             }
         }
         return list;
+    }
+
+    private JSONObject remoteCall(String modelSetting){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("modelSetting", modelSetting);
+        String str = jsonObject.toJSONString();
+        // 访问服务进程的套接字
+        Socket socket = null;
+        try {
+            // 初始化套接字，设置访问服务的主机和进程端口号，HOST是访问python进程的主机名称，可以是IP地址或者域名，PORT是python进程绑定的端口号
+            socket = new Socket("192.168.61.60", 2474);
+            // 获取输出流对象
+            OutputStream os = socket.getOutputStream();
+            PrintStream out = new PrintStream(os);
+            // 发送内容
+            out.print(str);
+            // 告诉服务进程，内容发送完毕，可以开始处理
+            out.print("over");
+            // 获取服务进程的输入流
+            InputStream is = socket.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is,"utf-8"));
+            String tmp = null;
+            StringBuilder sb = new StringBuilder();
+            // 读取内容
+            while((tmp=br.readLine())!=null)
+                sb.append(tmp);
+            // 解析结果
+            JSONObject res = new JSONObject();
+            res.put("result",sb.toString());
+            return res;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {if(socket!=null) socket.close();} catch (IOException e) {}
+            System.out.println("远程接口调用结束.");
+        }
+        return null;
+    }
+    @Override
+    public JSONObject getPredictResult(String modelSetting) {
+        return remoteCall(modelSetting);
     }
 
 

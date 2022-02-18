@@ -21,6 +21,8 @@ import java.util.*;
 @Component
 public class UserDaoImpl implements UserDao{
 
+    public static String collectionName="simplifyData50";//选用的集合名称
+
     @Autowired
     MongoTemplate mongoTemplate;
 
@@ -28,7 +30,7 @@ public class UserDaoImpl implements UserDao{
     public List<UserTrajectory> getUserODs() {
         Query query = new Query();
         query.fields().include("userid","origin","destination");
-        return mongoTemplate.find(query,UserTrajectory.class,"simplifyData");
+        return mongoTemplate.find(query,UserTrajectory.class,collectionName);
     }
 
     @Override
@@ -37,7 +39,22 @@ public class UserDaoImpl implements UserDao{
         Query query = new Query(Criteria
                 .where("userid").is(id));
 //        return mongoTemplate.find(query,UserTrajectory.class);
-        MongoCursor<Document> cursor= mongoTemplate.getCollection("simplifyData50").
+        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
+                find(query.getQueryObject())
+                .iterator();
+        while (cursor.hasNext()){
+            Document next = cursor.next();
+            list.add(next);
+        }
+        return list;
+    }
+
+    @Override
+    public List<Document> getUserTrajectoryByRegex(String id,String searchNum) {
+        List<Document> list = new ArrayList<>();
+        Query query = new Query(Criteria
+                .where("_id").regex("^"+id+"_.*"+searchNum+".*$"));
+        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
                 find(query.getQueryObject())
                 .iterator();
         while (cursor.hasNext()){
@@ -51,7 +68,7 @@ public class UserDaoImpl implements UserDao{
     public Document getOneTrajectoryByTraId(String trajId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(trajId));
-        MongoCursor<Document> cursor= mongoTemplate.getCollection("simplifyData").
+        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
                 find(query.getQueryObject())
                 .iterator();
         return cursor.next();
@@ -65,7 +82,7 @@ public class UserDaoImpl implements UserDao{
         query.addCriteria(Criteria.where("month").gte(month[0]).lte(month[1]));
         query.addCriteria(Criteria.where("weekday").gte(weekday[0]).lte(weekday[1]));
         query.addCriteria(Criteria.where("hour").gte(hour[0]).lte(hour[1]));
-        MongoCursor<Document> cursor= mongoTemplate.getCollection("simplifyData").
+        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
                 find(query.getQueryObject())
                 .iterator();
         while (cursor.hasNext()){
@@ -80,7 +97,7 @@ public class UserDaoImpl implements UserDao{
         List<Document> list = new ArrayList<>();
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(trajId));
-        MongoCursor<Document> cursor= mongoTemplate.getCollection("simplifyData").
+        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
                 find(query.getQueryObject())
                 .iterator();
         Document findTraj = cursor.next();
@@ -98,7 +115,7 @@ public class UserDaoImpl implements UserDao{
             criteria.orOperator(Criteria.where("date").gte(sdf.format(startDate)).lt(sdf.format(endDate)),
                     Criteria.where("date").is(sdf.format(endDate)).and("time").lt(findTraj.get("time")));
             historyQuery.addCriteria(criteria);
-            MongoCursor<Document> historyCursor= mongoTemplate.getCollection("simplifyData").
+            MongoCursor<Document> historyCursor= mongoTemplate.getCollection(collectionName).
                     find(historyQuery.getQueryObject())
                     .iterator();
             while (historyCursor.hasNext()){
@@ -117,7 +134,7 @@ public class UserDaoImpl implements UserDao{
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("userid").is(id)),
                 Aggregation.group("date").count().as("TrajCount"));
-        AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,"simplifyData",BasicDBObject.class);
+        AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,collectionName,BasicDBObject.class);
         for(Iterator<BasicDBObject> iterator = trajCount.iterator();iterator.hasNext();){
             DBObject object = iterator.next();
             list.add(JSONObject.parseObject(object.toString()));
@@ -131,7 +148,7 @@ public class UserDaoImpl implements UserDao{
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("userid").is(id)),
                 Aggregation.count().as("TrajCount"));
-        AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,"simplifyData",BasicDBObject.class);
+        AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,collectionName,BasicDBObject.class);
         for(Iterator<BasicDBObject> iterator = trajCount.iterator();iterator.hasNext();){
             DBObject object = iterator.next();
             list.add(JSONObject.parseObject(object.toString()));
