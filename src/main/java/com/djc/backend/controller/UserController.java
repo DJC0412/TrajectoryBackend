@@ -24,7 +24,7 @@ public class UserController {
 
     @ApiOperation("获取所有用户的大五人格数据")
     @GetMapping("/ocean_score_all")
-    public String oceanScoreAll() throws JSONException {
+    public String oceanScoreAll() {
         return  userService.queryAllUsers();
     }
 
@@ -32,6 +32,36 @@ public class UserController {
     @GetMapping("/ocean_score_one")
     public String oceanScoreOne(@ApiParam(value = "用户id",required =  true) @RequestParam("id") String id){
         return userService.queryUserById(id);
+    }
+
+    @ApiOperation("获取用户数目")
+    @GetMapping("/getUsersNum")
+    public Integer getUsersNum(){
+        return userService.getUsersNum();
+    }
+
+    @ApiOperation("获取轨迹数目")
+    @GetMapping("/getTrajNum")
+    public Long getTrajNum(){
+        return userService.getTrajNum();
+    }
+
+    @ApiOperation("获取用户熵均值")
+    @GetMapping("/getAverageEntropy")
+    public JSONObject getAverageEntropy(){
+        return userService.getAverageEntropy();
+    }
+
+    @ApiOperation("获取用户人格均值")
+    @GetMapping("/getAverageOcean")
+    public JSONObject getAverageOcean(){
+        return userService.getAverageOcean();
+    }
+
+    @ApiOperation("获取用户mean均值")
+    @GetMapping("/getAverageMean")
+    public JSONObject getAverageMean(){
+        return userService.getAverageMean();
     }
 
     @ApiOperation("获取所有用户的ODs")
@@ -94,6 +124,14 @@ public class UserController {
         return userService.getUserTrajectoryByIdAndTime(id,month,weekday,hour);
     }
 
+    @ApiOperation("统计时间段内的轨迹计数分布")
+    @GetMapping("/getUserTrajectoryCountBetweenDate")
+    public JSONObject getUserTrajectoryCountBetweenDate(@ApiParam(value = "用户id",required =  true) @RequestParam("id") String id,String startDate, String endDate){
+        if(startDate==null)startDate="";
+        if(endDate==null)endDate="";
+        return userService.getUserTrajectoryCountBetweenDate(id,startDate,endDate);
+    }
+
     @ApiOperation("获取该用户每天的轨迹计数")
     @GetMapping("/getDateTrajCount")
     public JSONObject getDateTrajCount(@ApiParam(value = "用户id",required =  true) @RequestParam("id") String id){
@@ -114,7 +152,12 @@ public class UserController {
 
     @ApiOperation("获取预测结果")
     @GetMapping("/getPredictResult")
-    public JSONObject getPredictResult(@ApiParam(value = "模型参数",required =  true) @RequestParam("modelSetting") String modelSetting){
-        return userService.getPredictResult(modelSetting);
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "modelSetting", value = "模型参数", defaultValue = ""),
+            @ApiImplicitParam(name = "cutPoint", value = "切割比例", defaultValue = "1"),
+    }
+    )
+    public JSONObject getPredictResult(@ApiParam(value = "轨迹ID") @RequestParam("trajID") String trajID,String cutPoint,String modelSetting){
+        return userService.getPredictResult(trajID,cutPoint,modelSetting);
     }
 }

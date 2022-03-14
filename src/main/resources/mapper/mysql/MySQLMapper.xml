@@ -10,4 +10,36 @@
     <select id="queryAllUsers" resultType="com.djc.backend.entity.User" useCache="true">
         select * from idea.user
     </select>
+
+    <select id="getUsersNum" resultType="Integer" useCache="true">
+        select count(*) from idea.user
+    </select>
+
+    <select id="getUsersAVG" resultType="java.util.HashMap" useCache="true">
+        select AVG(random_entropy) as random_entropy,
+               AVG(uncorrelated_entropy) as uncorrelated_entropy,
+               AVG(real_entropy) as real_entropy,
+               AVG(distance_from_home_entropy) as distance_from_home_entropy,
+               AVG(OD_entropy) as OD_entropy,
+               AVG(day_entropy) as day_entropy,
+               AVG(datetime_entropy) as datetime_entropy,
+               AVG(extroversion) as extroversion,
+               AVG(openness) as openness,
+               AVG(neuroticism) as neuroticism,
+               AVG(conscientiousness) as conscientiousness,
+               AVG(entertainment_prob) as entertainment_prob,
+               AVG(restaurant_prob) as restaurant_prob,
+               AVG(entertainment_num) as entertainment_num,
+               AVG(restaurant_num) as restaurant_num,
+               AVG(speed_std_mean) as speed_std_mean,
+               AVG(acceleration_std_mean) as acceleration_std_mean,
+               AVG(harsh_shift_ratio_std) as harsh_shift_ratio_std,
+               AVG(harsh_steering_ratio_std) as harsh_steering_ratio_std,
+               AVG(speed_mean) as speed_mean,
+               AVG(over_speed_ratio) as over_speed_ratio,
+               AVG(over_speed_quantity) as over_speed_quantity,
+               AVG(junction_over_speed) as junction_over_speed,
+               AVG(junction_speed_mean) as junction_speed_mean
+        from idea.user
+    </select>
 </mapper>

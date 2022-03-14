@@ -34,16 +34,18 @@ public class UserDaoImpl implements UserDao{
     }
 
     @Override
+    public Long getTrajNum() {
+        return mongoTemplate.getCollection(collectionName).estimatedDocumentCount();
+    }
+
+    @Override
     public List<Document> getUserTrajectoryById(String id) {
         List<Document> list = new ArrayList<>();
         Query query = new Query(Criteria
                 .where("userid").is(id));
 //        return mongoTemplate.find(query,UserTrajectory.class);
-        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
-                find(query.getQueryObject())
-                .iterator();
-        while (cursor.hasNext()){
-            Document next = cursor.next();
+        for (Document next : mongoTemplate.getCollection(collectionName).
+                find(query.getQueryObject())) {
             list.add(next);
         }
         return list;
@@ -54,11 +56,8 @@ public class UserDaoImpl implements UserDao{
         List<Document> list = new ArrayList<>();
         Query query = new Query(Criteria
                 .where("_id").regex("^"+id+"_.*"+searchNum+".*$"));
-        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
-                find(query.getQueryObject())
-                .iterator();
-        while (cursor.hasNext()){
-            Document next = cursor.next();
+        for (Document next : mongoTemplate.getCollection(collectionName).
+                find(query.getQueryObject())) {
             list.add(next);
         }
         return list;
@@ -82,12 +81,29 @@ public class UserDaoImpl implements UserDao{
         query.addCriteria(Criteria.where("month").gte(month[0]).lte(month[1]));
         query.addCriteria(Criteria.where("weekday").gte(weekday[0]).lte(weekday[1]));
         query.addCriteria(Criteria.where("hour").gte(hour[0]).lte(hour[1]));
-        MongoCursor<Document> cursor= mongoTemplate.getCollection(collectionName).
-                find(query.getQueryObject())
-                .iterator();
-        while (cursor.hasNext()){
-            Document next = cursor.next();
+        for (Document next : mongoTemplate.getCollection(collectionName).
+                find(query.getQueryObject())) {
             list.add(next);
+        }
+        return list;
+    }
+
+    @Override
+    public List<Document> getUserTrajectoryBetweenDate(String id, String startDate, String endDate) {
+        List<Document> list = new ArrayList<>();
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date end=sdf.parse(endDate);
+            Date start=sdf.parse(startDate);
+            Query query = new Query();
+            query.addCriteria(Criteria.where("userid").is(id));
+            query.addCriteria(Criteria.where("date").gte(sdf.format(start)).lte(sdf.format(end)));
+            for (Document next : mongoTemplate.getCollection(collectionName).
+                    find(query.getQueryObject())) {
+                list.add(next);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
         return list;
     }
@@ -115,11 +131,8 @@ public class UserDaoImpl implements UserDao{
             criteria.orOperator(Criteria.where("date").gte(sdf.format(startDate)).lt(sdf.format(endDate)),
                     Criteria.where("date").is(sdf.format(endDate)).and("time").lt(findTraj.get("time")));
             historyQuery.addCriteria(criteria);
-            MongoCursor<Document> historyCursor= mongoTemplate.getCollection(collectionName).
-                    find(historyQuery.getQueryObject())
-                    .iterator();
-            while (historyCursor.hasNext()){
-                Document next = historyCursor.next();
+            for (Document next : mongoTemplate.getCollection(collectionName).
+                    find(historyQuery.getQueryObject())) {
                 list.add(next);
             }
         } catch (ParseException e) {
@@ -135,8 +148,7 @@ public class UserDaoImpl implements UserDao{
                 Aggregation.match(Criteria.where("userid").is(id)),
                 Aggregation.group("date").count().as("TrajCount"));
         AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,collectionName,BasicDBObject.class);
-        for(Iterator<BasicDBObject> iterator = trajCount.iterator();iterator.hasNext();){
-            DBObject object = iterator.next();
+        for (DBObject object : trajCount) {
             list.add(JSONObject.parseObject(object.toString()));
         }
         return list;
@@ -149,8 +161,7 @@ public class UserDaoImpl implements UserDao{
                 Aggregation.match(Criteria.where("userid").is(id)),
                 Aggregation.count().as("TrajCount"));
         AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,collectionName,BasicDBObject.class);
-        for(Iterator<BasicDBObject> iterator = trajCount.iterator();iterator.hasNext();){
-            DBObject object = iterator.next();
+        for (DBObject object : trajCount) {
             list.add(JSONObject.parseObject(object.toString()));
         }
         return list;
