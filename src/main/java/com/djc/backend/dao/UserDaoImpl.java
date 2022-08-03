@@ -52,6 +52,17 @@ public class UserDaoImpl implements UserDao{
     }
 
     @Override
+    public List<Document> getUsersTopFive() {
+        List<Document> list = new ArrayList<>();
+        Query query = new Query();
+        for (Document next : mongoTemplate.getCollection("userTop5").
+                find(query.getQueryObject())) {
+            list.add(next);
+        }
+        return list;
+    }
+
+    @Override
     public List<Document> getUserTrajectoryByRegex(String id,String searchNum) {
         List<Document> list = new ArrayList<>();
         Query query = new Query(Criteria
@@ -92,6 +103,7 @@ public class UserDaoImpl implements UserDao{
     public List<Document> getUserTrajectoryBetweenDate(String id, String startDate, String endDate) {
         List<Document> list = new ArrayList<>();
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        if(startDate==null || endDate==null) return list;
         try {
             Date end=sdf.parse(endDate);
             Date start=sdf.parse(startDate);
@@ -147,6 +159,18 @@ public class UserDaoImpl implements UserDao{
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("userid").is(id)),
                 Aggregation.group("date").count().as("TrajCount"));
+        AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,collectionName,BasicDBObject.class);
+        for (DBObject object : trajCount) {
+            list.add(JSONObject.parseObject(object.toString()));
+        }
+        return list;
+    }
+
+    @Override
+    public List<JSONObject> getUserTrajNumsByDay() {
+        List<JSONObject> list = new ArrayList<>();
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.group("date").push("userid").as("userid"));
         AggregationResults<BasicDBObject> trajCount = mongoTemplate.aggregate(aggregation,collectionName,BasicDBObject.class);
         for (DBObject object : trajCount) {
             list.add(JSONObject.parseObject(object.toString()));

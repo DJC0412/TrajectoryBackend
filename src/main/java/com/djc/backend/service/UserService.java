@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface UserService {
     String queryUserById(String id);
-    String queryAllUsers();
+    ArrayList<JSONObject> queryAllUsers();
     Integer getUsersNum();
     Map<String, Object> getUsersAVG();
     JSONObject getAverageEntropy();
@@ -16,6 +16,8 @@ public interface UserService {
     JSONObject getAverageMean();
     Long getTrajNum();
     ArrayList<JSONObject> getUserODs();
+    ArrayList<JSONObject> getUsersTopFive();
+    ArrayList<JSONObject> getUserTrajNumsByDay();
     ArrayList<JSONObject> getUserTrajectoryById(String id);
     ArrayList<Object> getUserTrajectoryByRegex(String id,String searchNum);
     JSONObject getOneTrajectoryByTraId(String trajId);

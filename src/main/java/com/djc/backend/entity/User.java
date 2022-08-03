@@ -13,46 +13,46 @@ import lombok.NoArgsConstructor;
 public class User {
     @ApiModelProperty("人员编号")
     private String user_id;
-    @ApiModelProperty("总出行次数")
-    private float total_trip_count;
+    @ApiModelProperty("每月出行天数")
+    private float trips_per_month;
+    @ApiModelProperty("居家时间半径")
+    private float ratio_stay_time_in_home;
     @ApiModelProperty("总出行距离")
-    private float total_distance_covered;
+    private float trip_length;
     @ApiModelProperty("时间加权的旋转半径")
     private float rg_time;
     @ApiModelProperty("旋转半径")
     private float rg_quantity;
-    @ApiModelProperty("休闲地理语义均值")
-    private float entertainment_prob;
-    @ApiModelProperty("餐饮地理语义均值")
-    private float restaurant_prob;
-    @ApiModelProperty("休闲POI数量均值")
-    private float entertainment_num;
-    @ApiModelProperty("餐饮POI数量均值")
-    private float restaurant_num;
+    @ApiModelProperty("购物")
+    private float shopping;
+    @ApiModelProperty("娱乐")
+    private float recreation;
+    @ApiModelProperty("餐饮")
+    private float restaurant;
     @ApiModelProperty("非兴趣停留点比率")
-    private float infreq_visited_locs_total_visited_locs;
-    @ApiModelProperty("前二旋转半径比率")
-    private float rg2_rg_quantity;
+    private float ratio_of_uninterested_trips;
+    @ApiModelProperty("前四旋转半径比率")
+    private float rg4_rg_quantity;
     @ApiModelProperty("k值")
     private float k_quantity;
     @ApiModelProperty("随机熵")
     private float random_entropy;
-    @ApiModelProperty("时间无关熵")
-    private float uncorrelated_entropy;
-    @ApiModelProperty("真实熵")
-    private float real_entropy;
-    @ApiModelProperty("离家距离熵")
-    private float distance_from_home_entropy;
+    @ApiModelProperty("位置熵")
+    private float location_entropy;
     @ApiModelProperty("旅行熵")
     private float OD_entropy;
+    @ApiModelProperty("序列熵")
+    private float sequence_entropy;
+    @ApiModelProperty("离家距离熵")
+    private float distance_from_home_entropy;
     @ApiModelProperty("速度标准差均值")
     private float speed_std_mean;
+    @ApiModelProperty("速度均值标准差")
+    private float speed_mean_std;
     @ApiModelProperty("速度标准差最大值")
     private float speed_std_max;
-    @ApiModelProperty("加速度标准差均值")
-    private float acceleration_std_mean;
     @ApiModelProperty("加速度标准差最大值")
-    private float accelaration_std_max;
+    private float acceleration_std_max;
     @ApiModelProperty("急变速比率均值")
     private float harsh_shift_ratio_std;
     @ApiModelProperty("急转弯比率均值")
@@ -90,26 +90,26 @@ public class User {
     public String toString() {
         return "{" +
                 "人员编号:" + user_id +
-                ", 总出行次数:" + total_trip_count +
-                ", 总出行距离:" + total_distance_covered +
+                ", 每月出行天数:" + trips_per_month +
+                ", 居家时间半径:" + ratio_stay_time_in_home +
+                ", 总出行距离:" + trip_length +
                 ", 时间加权的旋转半径:" + rg_time +
                 ", 旋转半径:" + rg_quantity +
-                ", 休闲地理语义均值:" + entertainment_prob +
-                ", 餐饮地理语义均值:" + restaurant_prob +
-                ", 休闲POI数量均值:" + entertainment_num +
-                ", 餐饮POI数量均值:" + restaurant_num +
-                ", 非兴趣停留点比率:" + infreq_visited_locs_total_visited_locs +
-                ", 前二旋转半径比率:" + rg2_rg_quantity +
+                ", 购物:" + shopping +
+                ", 娱乐:" + recreation +
+                ", 餐饮:" + restaurant +
+                ", 非兴趣停留点比率:" + ratio_of_uninterested_trips +
+                ", 前四旋转半径比率:" + rg4_rg_quantity +
                 ", k值:" + k_quantity +
                 ", 随机熵:" + random_entropy +
-                ", 时间无关熵:" + uncorrelated_entropy +
-                ", 真实熵:" + real_entropy +
-                ", 离家距离熵:" + distance_from_home_entropy +
+                ", 位置熵:" + location_entropy +
                 ", 旅行熵:" + OD_entropy +
+                ", 序列熵:" + sequence_entropy +
+                ", 离家距离熵:" + distance_from_home_entropy +
                 ", 速度标准差均值:" + speed_std_mean +
+                ", 速度均值标准差:" + speed_mean_std +
                 ", 速度标准差最大值:" + speed_std_max +
-                ", 加速度标准差均值:" + acceleration_std_mean +
-                ", 加速度标准差最大值:" + accelaration_std_max +
+                ", 加速度标准差最大值:" + acceleration_std_max +
                 ", 急变速比率均值:" + harsh_shift_ratio_std +
                 ", 急转弯比率均值:" + harsh_steering_ratio_std +
                 ", 急变速比率标准差:" + harsh_shift_ratio_mean +

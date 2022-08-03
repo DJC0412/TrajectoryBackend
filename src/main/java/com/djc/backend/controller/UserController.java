@@ -24,8 +24,11 @@ public class UserController {
 
     @ApiOperation("获取所有用户的大五人格数据")
     @GetMapping("/ocean_score_all")
-    public String oceanScoreAll() {
-        return  userService.queryAllUsers();
+    public JSONObject oceanScoreAll() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data",userService.queryAllUsers());
+        jsonObject.put("timestamps",System.currentTimeMillis());
+        return jsonObject;
     }
 
     @ApiOperation("获取单个用户的大五人格数据")
@@ -68,6 +71,24 @@ public class UserController {
     @GetMapping("/getUserODs")
     public ArrayList<JSONObject> getUserODs(){
         return  userService.getUserODs();
+    }
+
+    @ApiOperation("获取所有用户的TOP5")
+    @GetMapping("/getUsersTopFive")
+    public JSONObject getUsersTopFive(){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data",userService.getUsersTopFive());
+        jsonObject.put("timestamps",System.currentTimeMillis());
+        return jsonObject;
+    }
+
+    @ApiOperation("获取各天各用户出行次数")
+    @GetMapping("/getUserTrajNumsByDay")
+    public JSONObject getUserTrajNumsByDay(){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data",userService.getUserTrajNumsByDay());
+        jsonObject.put("timestamps",System.currentTimeMillis());
+        return jsonObject;
     }
 
     @ApiOperation("获取单个用户的所有轨迹数据")
@@ -127,8 +148,6 @@ public class UserController {
     @ApiOperation("统计时间段内的轨迹计数分布")
     @GetMapping("/getUserTrajectoryCountBetweenDate")
     public JSONObject getUserTrajectoryCountBetweenDate(@ApiParam(value = "用户id",required =  true) @RequestParam("id") String id,String startDate, String endDate){
-        if(startDate==null)startDate="";
-        if(endDate==null)endDate="";
         return userService.getUserTrajectoryCountBetweenDate(id,startDate,endDate);
     }
 

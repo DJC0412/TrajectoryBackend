@@ -32,13 +32,13 @@ public class UserServiceImpl implements  UserService{
     }
 
     @Override
-    public String queryAllUsers(){
+    public ArrayList<JSONObject> queryAllUsers(){
         List<User> allUsers = mySQLMapper.queryAllUsers();
-        JSONObject jsonObject = new JSONObject();
+        ArrayList<JSONObject> usersScores = new ArrayList<>();
         for (int i = 0; i < allUsers.size(); i++) {
-            jsonObject.put(String.valueOf(i),JSONObject.parseObject(allUsers.get(i).toString()));
+            usersScores.add(JSONObject.parseObject(allUsers.get(i).toString()));
         }
-        return jsonObject.toString();
+        return usersScores;
     }
 
     @Override
@@ -56,10 +56,10 @@ public class UserServiceImpl implements  UserService{
         Map<String, Object> userAVG=getUsersAVG();
         JSONObject entropyJson=new JSONObject();
         entropyJson.put("随机熵",userAVG.get("random_entropy"));
-        entropyJson.put("时间无关熵",userAVG.get("uncorrelated_entropy"));
-        entropyJson.put("真实熵",userAVG.get("real_entropy"));
-        entropyJson.put("离家距离熵",userAVG.get("distance_from_home_entropy"));
+        entropyJson.put("位置熵",userAVG.get("location_entropy"));
         entropyJson.put("旅行熵",userAVG.get("OD_entropy"));
+        entropyJson.put("序列熵",userAVG.get("sequence_entropy"));
+        entropyJson.put("离家距离熵",userAVG.get("distance_from_home_entropy"));
         entropyJson.put("日内节律熵",userAVG.get("day_entropy"));
         entropyJson.put("节律熵",userAVG.get("datetime_entropy"));
         return entropyJson;
@@ -80,12 +80,10 @@ public class UserServiceImpl implements  UserService{
     public JSONObject getAverageMean() {
         Map<String, Object> userAVG=getUsersAVG();
         JSONObject meanJson=new JSONObject();
-        meanJson.put("休闲地理语义均值",userAVG.get("entertainment_prob"));
-        meanJson.put("餐饮地理语义均值",userAVG.get("restaurant_prob"));
-        meanJson.put("休闲POI数量均值",userAVG.get("entertainment_num"));
-        meanJson.put("餐饮POI数量均值",userAVG.get("restaurant_num"));
+        meanJson.put("购物",userAVG.get("shopping"));
+        meanJson.put("娱乐",userAVG.get("recreation"));
+        meanJson.put("餐饮",userAVG.get("restaurant"));
         meanJson.put("速度标准差均值",userAVG.get("speed_std_mean"));
-        meanJson.put("加速度标准差均值",userAVG.get("acceleration_std_mean"));
         meanJson.put("急变速比率均值",userAVG.get("harsh_shift_ratio_std"));
         meanJson.put("急转弯比率均值",userAVG.get("harsh_steering_ratio_std"));
         meanJson.put("速度均值",userAVG.get("speed_mean"));
@@ -120,6 +118,52 @@ public class UserServiceImpl implements  UserService{
             usersOds.add(jsonObject);
         });
         return usersOds;
+    }
+
+    @Override
+    public ArrayList<JSONObject> getUsersTopFive() {
+        List<Document> usersTop5Doc = userDaoMongoDB.getUsersTopFive();
+        ArrayList<JSONObject> usersTop5 = new ArrayList<>();
+        usersTop5Doc.forEach((userTop5) -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("id",userTop5.get("_id"));
+            ArrayList counts = userTop5.get("counts", ArrayList.class);
+            ArrayList lngs = userTop5.get("lngs", ArrayList.class);
+            ArrayList lats = userTop5.get("lats", ArrayList.class);
+            ArrayList<JSONObject> Top5Data = new ArrayList<>();
+            for (int i = 0; i < counts.size(); i++) {
+                JSONObject TopObject = new JSONObject();
+                Double[] lnglat = new Double[]{(Double) lngs.get(i), (Double) lats.get(i)};
+                TopObject.put("lnglat",lnglat);
+                TopObject.put("count",counts.get(i));
+                Top5Data.add(TopObject);
+            }
+            jsonObject.put("data",Top5Data);
+            usersTop5.add(jsonObject);
+        });
+        return usersTop5;
+    }
+
+    @Override
+    public ArrayList<JSONObject> getUserTrajNumsByDay() {
+        ArrayList<JSONObject> trajNums = new ArrayList<>();
+        List<JSONObject> trajNumsByDay = userDaoMongoDB.getUserTrajNumsByDay();
+        for (JSONObject dateObject : trajNumsByDay){
+            JSONObject CountJSON = new JSONObject();
+            CountJSON.put("date",dateObject.get("_id"));
+            List<String> userTrajs = (List<String>) dateObject.get("userid");
+            Map<String, Long> collect = userTrajs.stream().collect(Collectors.groupingBy(str -> str, Collectors.counting()));
+            ArrayList<JSONObject> dateData = new ArrayList<>();
+            collect.forEach((key,value)->{
+                JSONObject userCount = new JSONObject();
+                userCount.put("user",key);
+                userCount.put("count",value);
+                dateData.add(userCount);
+            });
+            CountJSON.put("data",dateData);
+            trajNums.add(CountJSON);
+        }
+        return trajNums;
     }
 
     @Override
